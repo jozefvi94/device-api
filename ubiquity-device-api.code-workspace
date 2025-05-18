@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic",
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"cSpell.words": [
+			"assertj",
+			"factorypath",
+			"nbbuild",
+			"nbdist",
+			"nbproject",
+			"springdoc",
+			"webmvc"
+		]
+	}
+}

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DeviceApiApplication<device-api>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "cz.jbenes.ubiquity.device_api.DeviceApiApplication",
+            "projectName": "device-api",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
