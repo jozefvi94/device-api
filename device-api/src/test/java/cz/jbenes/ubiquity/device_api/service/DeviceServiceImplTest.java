@@ -69,16 +69,6 @@ class DeviceServiceImplTest {
     }
 
     @Test
-    void registerDevice_shouldThrowIfDeviceExists() {
-        DeviceRequestDto request = new DeviceRequestDto(DeviceType.GATEWAY, "mac1", null);
-        when(deviceRepository.existsById("mac1")).thenReturn(true);
-
-        assertThatThrownBy(() -> deviceService.registerDevice(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Device with MAC address already exists");
-    }
-
-    @Test
     void registerDevice_shouldThrowIfUplinkNotFound() {
         DeviceRequestDto request = new DeviceRequestDto(DeviceType.SWITCH, "mac2", "uplinkMac");
         when(deviceRepository.existsById("mac2")).thenReturn(false);

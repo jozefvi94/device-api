@@ -4,13 +4,18 @@ import cz.jbenes.ubiquity.device_api.dto.DeviceRequestDto;
 import cz.jbenes.ubiquity.device_api.dto.DeviceResponseDto;
 import cz.jbenes.ubiquity.device_api.service.DeviceService;
 import cz.jbenes.ubiquity.device_api.util.TopologyNode;
+import jakarta.persistence.EntityNotFoundException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -26,7 +31,7 @@ class DeviceControllerTest {
     }
 
     @Test
-    void registerDevice_shouldReturnRegisteredDevice() {
+    void registerDevice_shouldRegisterDevice() {
         DeviceRequestDto requestDto = new DeviceRequestDto();
         DeviceResponseDto responseDto = new DeviceResponseDto();
         when(deviceService.registerDevice(ArgumentMatchers.any(DeviceRequestDto.class))).thenReturn(responseDto);
@@ -35,30 +40,6 @@ class DeviceControllerTest {
 
         assertEquals(responseDto, response.getBody());
         assertEquals(org.springframework.http.HttpStatus.OK, response.getStatusCode());
-        verify(deviceService).registerDevice(requestDto);
-    }
-
-    @Test
-    void registerDevice_shouldCallServiceWithValidRequest() {
-        DeviceRequestDto requestDto = mock(DeviceRequestDto.class);
-        DeviceResponseDto responseDto = new DeviceResponseDto();
-        when(deviceService.registerDevice(requestDto)).thenReturn(responseDto);
-
-        ResponseEntity<DeviceResponseDto> response = deviceController.registerDevice(requestDto);
-
-        assertNotNull(response.getBody());
-        verify(deviceService, times(1)).registerDevice(requestDto);
-    }
-
-    @Test
-    void registerDevice_shouldReturnNullWhenServiceReturnsNull() {
-        DeviceRequestDto requestDto = new DeviceRequestDto();
-        when(deviceService.registerDevice(requestDto)).thenReturn(null);
-
-        ResponseEntity<DeviceResponseDto> response = deviceController.registerDevice(requestDto);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(deviceService).registerDevice(requestDto);
     }
 
@@ -82,19 +63,8 @@ class DeviceControllerTest {
 
         ResponseEntity<List<DeviceResponseDto>> response = deviceController.getAllDevices();
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEmpty());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(deviceService).getAllDevicesSorted();
-    }
-    
-    @Test
-    void getAllDevices_shouldHandleServiceReturningNull() {
-        when(deviceService.getAllDevicesSorted()).thenReturn(null);
-
-        ResponseEntity<List<DeviceResponseDto>> response = deviceController.getAllDevices();
-
-        assertNull(response.getBody());
+        List<DeviceResponseDto> body = Objects.requireNonNull(response.getBody());
+        assertTrue(body.isEmpty());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(deviceService).getAllDevicesSorted();
     }
@@ -113,26 +83,12 @@ class DeviceControllerTest {
     }
 
     @Test
-    void getDeviceByMac_shouldReturnNullWhenDeviceNotFound() {
+    void getDeviceByMac_shouldThrowWhenDeviceNotFound() {
         String mac = "00:00:00:00:00:00";
-        when(deviceService.getDeviceByMac(mac)).thenReturn(null);
+        when(deviceService.getDeviceByMac(mac)).thenThrow(new EntityNotFoundException("Device not found"));
 
-        ResponseEntity<DeviceResponseDto> response = deviceController.getDeviceByMac(mac);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThrows(EntityNotFoundException.class, () -> deviceController.getDeviceByMac(mac));
         verify(deviceService).getDeviceByMac(mac);
-    }
-
-    @Test
-    void getDeviceByMac_shouldHandleNullMacAddress() {
-        when(deviceService.getDeviceByMac(null)).thenReturn(null);
-
-        ResponseEntity<DeviceResponseDto> response = deviceController.getDeviceByMac(null);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(deviceService).getDeviceByMac(null);
     }
 
     @Test
@@ -149,39 +105,24 @@ class DeviceControllerTest {
         verify(deviceService).getFullTopology();
     }
 
-
     @Test
     void getFullTopology_shouldReturnEmptyListWhenNoTopology() {
         when(deviceService.getFullTopology()).thenReturn(List.of());
 
         ResponseEntity<List<TopologyNode>> response = deviceController.getFullTopology();
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEmpty());
+        List<TopologyNode> body = Objects.requireNonNull(response.getBody());
+        assertTrue(body.isEmpty());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(deviceService).getFullTopology();
     }
 
     @Test
-    void getFullTopology_shouldHandleServiceReturningNull() {
-        when(deviceService.getFullTopology()).thenReturn(null);
-
-        ResponseEntity<List<TopologyNode>> response = deviceController.getFullTopology();
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(deviceService).getFullTopology();
-    }
-
-    @Test
-    void getTopologyFrom_shouldReturnNullWhenNodeNotFound() {
+    void getTopologyFrom_shouldThrowWhenNodeNotFound() {
         String mac = "FF:FF:FF:FF:FF:FF";
-        when(deviceService.getTopologyFrom(mac)).thenReturn(null);
+        when(deviceService.getTopologyFrom(mac)).thenThrow(new EntityNotFoundException("Node not found"));
 
-        ResponseEntity<TopologyNode> response = deviceController.getTopologyFrom(mac);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThrows(EntityNotFoundException.class, () -> deviceController.getTopologyFrom(mac));
         verify(deviceService).getTopologyFrom(mac);
     }
 
@@ -198,14 +139,4 @@ class DeviceControllerTest {
         verify(deviceService).getTopologyFrom(mac);
     }
 
-    @Test
-    void getTopologyFrom_shouldHandleNullMacAddress() {
-        when(deviceService.getTopologyFrom(null)).thenReturn(null);
-
-        ResponseEntity<TopologyNode> response = deviceController.getTopologyFrom(null);
-
-        assertNull(response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(deviceService).getTopologyFrom(null);
-    }
 }

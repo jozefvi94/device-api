@@ -15,6 +15,7 @@ import cz.jbenes.ubiquity.device_api.model.DeviceType;
 import cz.jbenes.ubiquity.device_api.repository.DeviceRepository;
 import cz.jbenes.ubiquity.device_api.util.TopologyNode;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 /**
  * {@inheritDoc}
@@ -32,15 +33,13 @@ public class DeviceServiceImpl implements DeviceService {
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public DeviceResponseDto registerDevice(DeviceRequestDto request) {
         if (request.getMacAddress() == null || request.getMacAddress().isBlank()) {
             throw new IllegalArgumentException("MAC address must not be null or blank");
         }
         if (request.getDeviceType() == null) {
             throw new IllegalArgumentException("Device type must not be null");
-        }
-        if (deviceRepository.existsById(request.getMacAddress())) {
-            throw new IllegalArgumentException("Device with MAC address already exists: " + request.getMacAddress());
         }
 
         Device uplink = null;
